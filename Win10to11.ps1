@@ -174,7 +174,6 @@ try {
     Write-LogMessage "Launching Windows 11 Installation Assistant..." -Level "Info"
     $arguments = @(
         "/Install"
-        "/QuietInstall"
         "/SkipEULA"
         "/copylogs"
         $WorkingDirectory
@@ -199,4 +198,5 @@ catch {
 }
 finally {
     Write-LogMessage "=== Windows 11 Upgrade Assistant Download Script Ended ===" -Level "Info"
+
 }
