@@ -180,7 +180,7 @@ try {
     )
     
     try {
-        $process = Start-Process -FilePath $ExecutableFile -ArgumentList $arguments -PassThru -ErrorAction Stop
+        $process = Start-Process -FilePath $ExecutableFile -ArgumentList $arguments -Verb RunAs -PassThru -ErrorAction Stop
         Write-LogMessage "Windows 11 Installation Assistant launched successfully (Process ID: $($process.Id))" -Level "Success"
         Write-LogMessage "Installation logs will be copied to: $WorkingDirectory" -Level "Info"
     }
@@ -200,3 +200,4 @@ finally {
     Write-LogMessage "=== Windows 11 Upgrade Assistant Download Script Ended ===" -Level "Info"
 
 }
+
