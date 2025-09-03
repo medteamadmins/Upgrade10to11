@@ -1,17 +1,9 @@
 ﻿#Requires -RunAsAdministrator
 
 <#
-.SYNOPSIS
-    Downloads and launches the Windows 11 Installation Assistant with enhanced error handling and logging.
-
 .DESCRIPTION
     This script downloads the official Windows 11 Installation Assistant from Microsoft,
     performs validation checks, and launches it with appropriate parameters for automated installation.
-
-.NOTES
-    Author: Enhanced PowerShell Script
-    Version: 2.0
-    Requires: PowerShell 5.1+ and Administrator privileges
 #>
 
 [CmdletBinding()]
@@ -202,6 +194,130 @@ catch {
 finally {
     Write-LogMessage "=== Windows 11 Upgrade Assistant Download Script Ended ===" -Level "Info"
 
+}
+
+#Add a message box.
+  # Show countdown message box for 30 minutes
+    Write-LogMessage "Starting 30-minute countdown notification..." -Level "Info"
+   try{ 
+    try {
+        # Load Windows Forms assembly for message box
+        Add-Type -AssemblyName System.Windows.Forms
+        Add-Type -AssemblyName System.Drawing
+        
+        # Create a custom form for countdown
+        $form = New-Object System.Windows.Forms.Form
+        $form.Text = "ATTENTION - Windows 11 Upgrade in Progress"
+        $form.Size = New-Object System.Drawing.Size(500, 200)
+        $form.StartPosition = "CenterScreen"
+        $form.FormBorderStyle = "FixedDialog"
+        $form.MaximizeBox = $false
+        $form.MinimizeBox = $false
+        $form.TopMost = $true
+        $form.BackColor = [System.Drawing.Color]::White
+        
+        # Create label for main message
+        $label = New-Object System.Windows.Forms.Label
+        $label.Location = New-Object System.Drawing.Point(20, 20)
+        $label.Size = New-Object System.Drawing.Size(460, 60)
+        $label.Text = "Windows 11 upgrade is currently in progress, your computer will restart once complete. To monitor the installation status and view detailed progress, please click the Windows 11 Installation Assistant mini window located in the bottom left corner of your screen."
+        $label.Font = New-Object System.Drawing.Font("Arial", 10, [System.Drawing.FontStyle]::Regular)
+        $label.TextAlign = "MiddleCenter"
+        $form.Controls.Add($label)
+        
+        # Create label for countdown
+        $countdownLabel = New-Object System.Windows.Forms.Label
+        $countdownLabel.Location = New-Object System.Drawing.Point(20, 90)
+        $countdownLabel.Size = New-Object System.Drawing.Size(460, 30)
+        $countdownLabel.Font = New-Object System.Drawing.Font("Arial", 12, [System.Drawing.FontStyle]::Bold)
+        $countdownLabel.ForeColor = [System.Drawing.Color]::Blue
+        $countdownLabel.TextAlign = "MiddleCenter"
+        $form.Controls.Add($countdownLabel)
+        
+        # Create close button
+        $closeButton = New-Object System.Windows.Forms.Button
+        $closeButton.Location = New-Object System.Drawing.Point(200, 130)
+        $closeButton.Size = New-Object System.Drawing.Size(100, 30)
+        $closeButton.Text = "Close"
+        $closeButton.Font = New-Object System.Drawing.Font("Arial", 10)
+        $closeButton.Add_Click({ $form.Close() })
+        $form.Controls.Add($closeButton)
+        
+        # Timer for countdown (30 minutes = 1800 seconds)
+        $totalSeconds = 3600
+        $currentSeconds = $totalSeconds
+        
+        $timer = New-Object System.Windows.Forms.Timer
+        $timer.Interval = 1000 # 1 second
+        
+        $timer.Add_Tick({
+            $script:currentSeconds--
+            
+            if ($script:currentSeconds -le 0) {
+                $timer.Stop()
+                $form.Close()
+                return
+            }
+            
+            # Calculate minutes and seconds remaining
+            $minutes = [math]::Floor($script:currentSeconds / 60)
+            $seconds = $script:currentSeconds % 60
+            
+            # Update countdown display
+            $countdownLabel.Text = "Time remaining: $($minutes.ToString('00')):$($seconds.ToString('00'))"
+            
+            # Change color as time gets low
+            if ($script:currentSeconds -le 300) { # Last 5 minutes
+                $countdownLabel.ForeColor = [System.Drawing.Color]::Red
+            }
+            elseif ($script:currentSeconds -le 600) { # Last 10 minutes
+                $countdownLabel.ForeColor = [System.Drawing.Color]::Orange
+            }
+        })
+        
+        # Initialize countdown display
+        $countdownLabel.Text = "Time remaining: 60:00"
+        
+        # Start timer and show form
+        $timer.Start()
+        Write-LogMessage "Countdown message box displayed for 30 minutes" -Level "Success"
+        
+        # Show form as dialog (blocks execution until closed)
+        $form.ShowDialog() | Out-Null
+        
+        # Clean up
+        $timer.Stop()
+        $timer.Dispose()
+        $form.Dispose()
+        
+        Write-LogMessage "Countdown notification completed or closed by user" -Level "Info"
+    }
+    catch {
+        Write-LogMessage "Failed to display countdown message box: $_" -Level "Warning"
+        
+        # Fallback to simple message box
+        try {
+            Add-Type -AssemblyName System.Windows.Forms
+            [System.Windows.Forms.MessageBox]::Show(
+                "Your computer is running an upgrade, and will restart once complete. To view the progress, please click Windows 11 Assistant at bottom left corner.`n`nThis notification will remain for 30 minutes.",
+                "Windows 11 Upgrade in Progress",
+                [System.Windows.Forms.MessageBoxButtons]::OK,
+                [System.Windows.Forms.MessageBoxIcon]::Information
+               
+               )
+        }
+ 
+        catch {
+            Write-LogMessage "Failed to display fallback message box: $_" -Level "Warning"
+        }
+    }
+    
+    Write-LogMessage "=== Script completed successfully ===" -Level "Success"
+}
+catch {
+    Write-LogMessage "Unexpected error occurred: $_" -Level "Error"
+    Write-LogMessage "Stack trace: $($_.ScriptStackTrace)" -Level "Error"
+    exit 1
 }
 
 
