@@ -175,6 +175,9 @@ try {
     $arguments = @(
         "/Install"
         "/SkipEULA"
+        "/QuietInstall"
+        "/MinimizeToTaskBar"
+        "/auto"
         "/copylogs"
         $WorkingDirectory
     )
@@ -200,4 +203,5 @@ finally {
     Write-LogMessage "=== Windows 11 Upgrade Assistant Download Script Ended ===" -Level "Info"
 
 }
+
 
