@@ -166,6 +166,7 @@ try {
     Write-LogMessage "Launching Windows 11 Installation Assistant..." -Level "Info"
     $arguments = @(
         "/Install"
+        "/SkipCompatCheck"
         "/SkipEULA"
         "/QuietInstall"
         "/MinimizeToTaskBar"
@@ -319,5 +320,6 @@ catch {
     Write-LogMessage "Stack trace: $($_.ScriptStackTrace)" -Level "Error"
     exit 1
 }
+
 
 
